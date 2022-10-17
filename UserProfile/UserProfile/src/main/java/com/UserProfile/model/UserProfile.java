@@ -21,6 +21,9 @@ public class UserProfile {
     private UUID id;
     @Type(type="org.hibernate.type.UUIDCharType")
     private UUID userId;
+
+    private String userName;
+    private String email;
     private Integer followerCount;
     private Integer followedCount;
 
@@ -28,6 +31,17 @@ public class UserProfile {
     private Date created;
     @Temporal(TemporalType.TIMESTAMP)
     private Date updated;
+
+    public UserProfile(String userName, String email) {
+        this.userName = userName;
+        this.email = email;
+        this.followedCount = 0;
+        this.followerCount = 0;
+    }
+
+    public UserProfile() {
+
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -85,5 +99,21 @@ public class UserProfile {
 
     public void setUpdated(Date updated) {
         this.updated = updated;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
