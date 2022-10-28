@@ -3,6 +3,7 @@ package com.UserProfile.controllers;
 import com.UserProfile.dao.UserProfileDao;
 import com.UserProfile.model.UserProfile;
 import org.apache.catalina.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,11 +13,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/userprofile")
+@RequestMapping("/v1/userprofile")
 public class HelloController {
 
 	private final UserProfileDao userProfileDao;
 
+	@Autowired
 	public HelloController(UserProfileDao userProfileDao) {
 		this.userProfileDao = userProfileDao;
 	}
