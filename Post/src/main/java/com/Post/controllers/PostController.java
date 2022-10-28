@@ -15,7 +15,7 @@ public final class PostController {
     private final PostDao dao;
 
     @Autowired
-    public PostController(PostDao dao) {
+    public PostController(final PostDao dao) {
         this.dao = dao;
     }
 
