@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -45,11 +46,11 @@ public final class PostController {
     }
 
     @PutMapping("/v1/post/{postId}")
-    public boolean updatePost(@PathVariable UUID postId, @RequestBody Post updatedPost) {
+    public ResponseEntity updatePost(@PathVariable UUID postId, @RequestBody Post updatedPost) {
         Optional<Post> opt = dao.findById(postId);
 
         if(opt.isEmpty()) {
-            return false;
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         final Post original = opt.get();
@@ -59,19 +60,19 @@ public final class PostController {
         original.setUpdated(new Date());
 
         dao.save(updatedPost);
-        return true;
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/v1/post/{postId}")
-    public boolean deletePost(@PathVariable UUID postId) {
+    public ResponseEntity deletePost(@PathVariable UUID postId) {
         try {
             dao.deleteById(postId);
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        return true;
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private void updateElementIfPresent(String update, Consumer<String> updater) {
