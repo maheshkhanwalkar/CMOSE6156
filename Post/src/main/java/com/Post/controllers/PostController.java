@@ -54,15 +54,27 @@ public final class PostController {
 
         final Post original = opt.get();
 
-        updateIfPresent(updatedPost.getBody(), original::setBody);
-        updateIfPresent(updatedPost.getSubject(), original::setSubject);
+        updateElementIfPresent(updatedPost.getBody(), original::setBody);
+        updateElementIfPresent(updatedPost.getSubject(), original::setSubject);
         original.setUpdated(new Date());
 
         dao.save(updatedPost);
         return true;
     }
 
-    private void updateIfPresent(String update, Consumer<String> updater) {
+    @DeleteMapping("/v1/post/{postId}")
+    public boolean deletePost(@PathVariable UUID postId) {
+        try {
+            dao.deleteById(postId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void updateElementIfPresent(String update, Consumer<String> updater) {
         if(update == null) {
             return;
         }
