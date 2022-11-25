@@ -1,7 +1,7 @@
-package com.Post.controllers;
+package edu.columbia.e6156.post.controllers;
 
-import com.Post.dao.PostDao;
-import com.Post.model.Post;
+import edu.columbia.e6156.post.dao.PostDao;
+import edu.columbia.e6156.post.model.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,4 +1,4 @@
-package com.Post.model;
+package edu.columbia.e6156.post.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

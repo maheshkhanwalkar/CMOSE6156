@@ -1,4 +1,4 @@
-package com.Post.config;
+package edu.columbia.e6156.post.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
