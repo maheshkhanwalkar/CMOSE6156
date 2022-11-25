@@ -1,6 +1,6 @@
 package edu.columbia.e6156.post.controllers;
 
-import edu.columbia.e6156.post.dao.PostDao;
+import edu.columbia.e6156.post.dao.PostRepository;
 import edu.columbia.e6156.post.model.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,10 +18,10 @@ import java.util.function.Consumer;
 @RestController
 @CrossOrigin
 public final class PostController {
-    private final PostDao dao;
+    private final PostRepository dao;
 
     @Autowired
-    public PostController(final PostDao dao) {
+    public PostController(final PostRepository dao) {
         this.dao = dao;
     }
 
