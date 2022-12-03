@@ -2,14 +2,17 @@ package edu.columbia.e6156.post.controllers;
 
 import edu.columbia.e6156.post.dao.PostRepository;
 import edu.columbia.e6156.post.model.Post;
-import org.springframework.beans.factory.annotation.Autowired;
+import edu.columbia.e6156.post.service.ImageService;
+import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,17 +20,20 @@ import java.util.function.Consumer;
 
 @RestController
 @CrossOrigin
+@AllArgsConstructor
 public final class PostController {
-    private final PostRepository dao;
+    private final PostRepository repository;
+    // TODO - replace with API call to image service, rather than directly using
+    private final ImageService imageService;
 
-    @Autowired
-    public PostController(final PostRepository dao) {
-        this.dao = dao;
+    @GetMapping("/health")
+    public ResponseEntity<String> getHealth() {
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/v1/post/{postId}")
     public Post getPost(@PathVariable UUID postId) {
-        Optional<Post> post = dao.findById(postId);
+        Optional<Post> post = repository.findById(postId);
 
         return post.orElseThrow(() -> {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, postId + " does not exist");
@@ -36,18 +42,30 @@ public final class PostController {
 
     @GetMapping("/v1/posts")
     public Page<Post> getPosts(Pageable p) {
-        return dao.findAll(p);
+        return repository.findAll(p);
     }
 
     @PostMapping("/v1/post")
-    public UUID createPost(@RequestBody Post post) {
-        dao.save(post);
-        return post.getId();
+    public UUID createPost(@RequestParam Post post, @RequestBody MultipartFile image) throws IOException {
+        if(image.isEmpty() && post.getPostId() == null) {
+            throw new IllegalArgumentException("no image provided");
+        }
+
+        if(!image.isEmpty()) {
+            // Create and upload the new image to the service
+            UUID imageId = imageService.create(post.getUserId(), image.getBytes());
+            post.setImageId(imageId);
+        }
+
+        post.setPostId(UUID.randomUUID());
+
+        repository.save(post);
+        return post.getPostId();
     }
 
     @PutMapping("/v1/post/{postId}")
     public ResponseEntity updatePost(@PathVariable UUID postId, @RequestBody Post updatedPost) {
-        Optional<Post> opt = dao.findById(postId);
+        Optional<Post> opt = repository.findById(postId);
 
         if(opt.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -55,18 +73,17 @@ public final class PostController {
 
         final Post original = opt.get();
 
-        updateElementIfPresent(updatedPost.getBody(), original::setBody);
         updateElementIfPresent(updatedPost.getSubject(), original::setSubject);
         original.setUpdated(new Date());
 
-        dao.save(updatedPost);
+        repository.save(updatedPost);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/v1/post/{postId}")
     public ResponseEntity deletePost(@PathVariable UUID postId) {
         try {
-            dao.deleteById(postId);
+            repository.deleteById(postId);
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
