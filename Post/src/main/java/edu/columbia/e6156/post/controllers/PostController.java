@@ -1,9 +1,10 @@
 package edu.columbia.e6156.post.controllers;
 
+import edu.columbia.e6156.post.aws.SnsTopic;
 import edu.columbia.e6156.post.dao.PostRepository;
 import edu.columbia.e6156.post.model.Post;
 import edu.columbia.e6156.post.service.ImageService;
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -14,17 +15,26 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 @RestController
 @CrossOrigin
-@AllArgsConstructor
 public final class PostController {
     private final PostRepository repository;
     // TODO - replace with API call to image service, rather than directly using
     private final ImageService imageService;
+    private final SnsTopic snsTopic;
+
+    @Autowired
+    public PostController(PostRepository repository, ImageService imageService, SnsTopic snsTopic) {
+        this.repository = repository;
+        this.imageService = imageService;
+        this.snsTopic = snsTopic;
+        this.snsTopic.setName("PostEventNotification");
+    }
 
     @GetMapping("/health")
     public ResponseEntity<String> getHealth() {
@@ -58,8 +68,10 @@ public final class PostController {
         }
 
         post.setPostId(UUID.randomUUID());
-
         repository.save(post);
+
+        // Send a 'create post' message to SNS to propagate to downstream feed service
+        snsTopic.send(Map.of("userId", post.getUserId(), "postId", post.getPostId(), "eventType", "CREATE"));
         return post.getPostId();
     }
 
