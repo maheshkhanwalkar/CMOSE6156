@@ -3,7 +3,6 @@ package edu.columbia.e6156.post.providers;
 import edu.columbia.e6156.post.config.BeanConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import software.amazon.awssdk.regions.providers.DefaultAwsRegionProviderChain;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sts.StsClient;
@@ -38,6 +37,6 @@ public final class AwsProvider
 
     @Bean(BeanConstants.AWS_REGION)
     public String getRegion() {
-        return DefaultAwsRegionProviderChain.builder().build().getRegion().id();
+        return "us-east-1";
     }
 }

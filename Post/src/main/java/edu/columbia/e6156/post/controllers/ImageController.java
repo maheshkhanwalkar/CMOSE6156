@@ -20,7 +20,7 @@ public class ImageController {
         return service.create(userId, bytes);
     }
 
-    @GetMapping("/v1/image/{imageId}")
+    @GetMapping(value = "/v1/image/{imageId}", produces = "image/*")
     public @ResponseBody byte[] retrieveImage(@PathVariable UUID imageId) {
         return service.getImage(imageId);
     }
