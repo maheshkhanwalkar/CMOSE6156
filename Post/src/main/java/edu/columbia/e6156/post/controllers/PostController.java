@@ -28,12 +28,14 @@ public final class PostController {
     private final ImageService imageService;
     private final SnsTopic snsTopic;
 
+    private static final String SNS_TOPIC_NAME = "PostEventNotification";
+
     @Autowired
     public PostController(PostRepository repository, ImageService imageService, SnsTopic snsTopic) {
         this.repository = repository;
         this.imageService = imageService;
         this.snsTopic = snsTopic;
-        this.snsTopic.setName("PostEventNotification");
+        this.snsTopic.setName(SNS_TOPIC_NAME);
     }
 
     @GetMapping("/health")
@@ -56,18 +58,20 @@ public final class PostController {
     }
 
     @PostMapping("/v1/post")
-    public UUID createPost(@RequestParam Post post, @RequestBody MultipartFile image) throws IOException {
-        if(image.isEmpty() && post.getPostId() == null) {
+    public UUID createPost(@RequestParam UUID userId, @RequestParam String subject,
+                           @RequestBody MultipartFile image) throws IOException {
+        if(userId == null || subject == null) {
+            throw new IllegalArgumentException("no user id or subject provided");
+        }
+
+        if(image == null || image.isEmpty()) {
             throw new IllegalArgumentException("no image provided");
         }
 
-        if(!image.isEmpty()) {
-            // Create and upload the new image to the service
-            UUID imageId = imageService.create(post.getUserId(), image.getBytes());
-            post.setImageId(imageId);
-        }
+        // Create and upload the new image to the service
+        UUID imageId = imageService.create(userId, image.getBytes());
 
-        post.setPostId(UUID.randomUUID());
+        Post post = createPostObject(userId, imageId, subject);
         repository.save(post);
 
         // Send a 'create post' message to SNS to propagate to downstream feed service
@@ -102,6 +106,13 @@ public final class PostController {
         }
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private Post createPostObject(UUID userId, UUID imageId, String subject) {
+        Date creation = new Date();
+        UUID postId = UUID.randomUUID();
+
+        return new Post(postId, userId, imageId, subject, creation, creation);
     }
 
     private void updateElementIfPresent(String update, Consumer<String> updater) {

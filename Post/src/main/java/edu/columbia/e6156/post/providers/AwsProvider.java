@@ -13,7 +13,7 @@ public final class AwsProvider
 {
     @Bean(BeanConstants.IMAGE_S3_BUCKET)
     public String getImageBucketName() {
-        return "s3://five-lions-image-store";
+        return "five-lions-image-store";
     }
 
     @Bean
